@@ -47,32 +47,6 @@ You are given the following material:
 >
 > This model artifact can then be picked up by the [action provided](https://github.com/lasselundstenjensen/itu-sdse-project-model-validator), which will run some inference tests to ensure that the correct model was trained.
 
-### Refactored CNN training
-
-After pulling the DVC metadata and downloading the matching image files into
-`data/images/raw/`, train the notebook-equivalent CNN from the repository root:
-
-```bash
-python -m modeling.train
-```
-
-The command reads `data/images/metadata.csv`, trains the `SimpleCNN` with the
-notebook's 64x64 preprocessing, 70/15/15 stratified split, and training
-settings, then writes `artifacts/vial_cnn_model.pth`,
-`artifacts/model_results.json`, `artifacts/class_names.json`,
-`artifacts/image_statistics.json`, and
-`artifacts/drift_baseline_stats.json`.
-The checkpoint contains the notebook-compatible `model_state_dict`,
-`architecture`, `input_shape`, `output_shape`, `threshold`, and `num_classes`
-fields. Override data and checkpoint paths with `--metadata`, `--images`, and
-`--output`; use `python -m modeling.train --help` to see all options.
-Run the model and drift checks with `python -m unittest discover -s tests`.
-
-The linked validator action currently expects a scikit-learn `model.pkl` and
-tabular predictions, which is a different artifact contract from this
-notebook's PyTorch image classifier checkpoint. The `.pth` checkpoint retains
-the image-model format expected by the notebook's model loader.
-
 ## How will we assess
 
 Below, we provide information on how we will assess the submission clustered around several aspects. The groups are expected to be of size 4, and you're expected to use pull requests and tests.
