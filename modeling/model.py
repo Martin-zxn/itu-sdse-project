@@ -3,9 +3,8 @@ from torch import nn
 
 
 class SimpleCNN(nn.Module):
-    """CNN for binary classification of 64x64 RGB vial images."""
-
-    def __init__(self) -> None:
+    
+    def __init__(self):
         super().__init__()
         self.conv1 = nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
@@ -15,7 +14,7 @@ class SimpleCNN(nn.Module):
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(0.3)
 
-    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+    def forward(self, inputs: torch.Tensor):
         inputs = self.pool(self.relu(self.conv1(inputs)))
         inputs = self.pool(self.relu(self.conv2(inputs)))
         inputs = torch.flatten(inputs, start_dim=1)
