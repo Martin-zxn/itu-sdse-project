@@ -18,9 +18,36 @@ func main() {
 	}
 	defer client.Close()
 
-	steps := []string{"get data", "prepare data", "train model", "save model"}
+	// Exclude local data and build folders but keep the DVC cache.
+	src := client.Host().Directory("..", dagger.HostDirectoryOpts{
+		Exclude: []string{
+			"dagger", "artifacts", ".venv", "**/__pycache__",
+			"data/images/metadata.csv", "data/images/raw",
+			"data/test/metadata.csv",
+		},
+	})
 
-	for _, step := range steps {
+	python := client.Container().
+		From("python:3.13-slim").
+		WithEnvVariable("PYTHONPATH", "src").
+		WithEnvVariable("DVC_NO_ANALYTICS", "1").
+		WithExec([]string{"pip", "install", "--no-cache-dir", "boto3", "dvc"}).
+		WithDirectory("/app", src).
+		WithWorkdir("/app")
+
+	// Step 1: restore metadata from DVC and download images
+	out, err := python.
+		WithExec([]string{"dvc", "checkout"}).
+		WithExec([]string{"sh", "-c", "python -c 'from ccds.dataset import pull_data_from_dvc; pull_data_from_dvc()' && ls data/images/raw | wc -l"}).
+		Stdout(ctx)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "step failed: get data", err)
+		os.Exit(1)
+	}
+	fmt.Print(out)
+
+	// Steps 2 to 4: still placeholders
+	for _, step := range []string{"prepare data", "train model", "save model"} {
 		out, err := runStep(ctx, client, step)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "step failed:", step, err)
